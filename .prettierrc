@@ -1,0 +1,48 @@
+{
+	"plugins": ["@ianvs/prettier-plugin-sort-imports", "prettier-plugin-tailwindcss"],
+	"tailwindFunctions": ["cn"],
+	"printWidth": 120,
+	"tabWidth": 2,
+	"useTabs": true,
+	"semi": true,
+	"singleQuote": true,
+	"quoteProps": "as-needed",
+	"jsxSingleQuote": false,
+	"trailingComma": "none",
+	"bracketSpacing": true,
+	"bracketSameLine": true,
+	"arrowParens": "always",
+	"proseWrap": "never",
+	"htmlWhitespaceSensitivity": "ignore",
+	"endOfLine": "lf",
+	"embeddedLanguageFormatting": "auto",
+	"singleAttributePerLine": true,
+	"importOrder": [
+		"^react$",
+		"^next",
+		"",
+		"^@gsap/react$",
+		"^gsap(.*)$",
+		"",
+		"<THIRD_PARTY_MODULES>",
+		"",
+		"^@/lib/(.*)$",
+		"^@/utils/(.*)$",
+		"",
+		"^@/blocks/(.*)$",
+		"^@/components/(.*)$",
+		"^@/elements/(.*)$",
+		"",
+		"^@/(.*)$",
+		"",
+		"^[./]"
+	],
+	"overrides": [
+		{
+			"files": ["*.yml", "*.yaml"],
+			"options": {
+				"useTabs": false
+			}
+		}
+	]
+}
