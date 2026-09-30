@@ -41,12 +41,19 @@ export default function SmoothScroll({ children, options }) {
 
 		lenis.on('scroll', ScrollTrigger.update);
 
+		// Lenis ne remesure la page que si <html> change de taille — or il est `h-full`,
+		// donc jamais. Un pin ajouté après coup (Spotlight desktop chargé à la volée)
+		// laissait la limite de scroll à 0. On recale à chaque refresh ScrollTrigger.
+		const resize = () => lenis.resize();
+		ScrollTrigger.addEventListener('refresh', resize);
+
 		const raf = (time) => lenis.raf(time * 1000);
 		gsap.ticker.add(raf);
 		gsap.ticker.lagSmoothing(0);
 
 		return () => {
 			lenis.off('scroll', ScrollTrigger.update);
+			ScrollTrigger.removeEventListener('refresh', resize);
 			gsap.ticker.remove(raf);
 			lenis.destroy();
 			instance = null;

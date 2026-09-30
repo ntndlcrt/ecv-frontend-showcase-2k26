@@ -1,5 +1,8 @@
 @import 'tailwindcss';
 
+/* = DESKTOP_QUERY de src/libs/useIsDesktop.js — garder les deux synchro */
+@custom-variant desktop (@media (min-width: 1001px) and (pointer: fine));
+
 :root {
 	--background: #222;
 	--foreground: #f8f8f8;

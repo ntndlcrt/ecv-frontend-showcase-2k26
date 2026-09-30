@@ -2,22 +2,10 @@
 
 import { useRef } from 'react';
 
+import WebGLScrollBend from '@/animations/WebGLScrollBend';
+import { PROJECTS } from '@/data/projects';
 import { CustomEase, Flip, gsap, ScrollTrigger, useGSAP } from '@/libs/gsap';
 import { startScroll, stopScroll } from '@/libs/Lenis';
-
-// TODO: remplacer les href par les vraies URLs des projets
-const PROJECTS = [
-	{ src: '/ethan-barlet.png', name: 'Ethan Barlet', href: 'https://example.com' },
-	{ src: '/lou-anne-biet.png', name: 'Lou-Anne Biet', href: 'https://example.com' },
-	{ src: '/nathan-pietrzak.png', name: 'Nathan Pietrzak', href: 'https://example.com' },
-	{ src: '/aurelien-fevre.png', name: 'Aurélien Fevre', href: 'https://example.com' },
-	{ src: '/dweezil-seche.png', name: 'Dweezil Seche', href: 'https://example.com' },
-	{ src: '/eliott-muller.png', name: 'Eliott Muller', href: 'https://example.com' },
-	{ src: '/alexandre-richert.png', name: 'Alexandre Richert', href: 'https://example.com' },
-	{ src: '/chloe-boivin.png', name: 'Chloé Boivin', href: 'https://example.com' },
-	{ src: '/antoine-chauveau.png', name: 'Antoine Chauveau', href: 'https://example.com' },
-	{ src: '/mathieu-strosberg.png', name: 'Mathieu Strosberg', href: 'https://example.com' }
-];
 
 const SCROLL_LENGTH = 5; // durée du scrub, en multiples de la hauteur viewport
 const ACTIVE_COLOR = '#f8f8f8';
@@ -30,7 +18,7 @@ const BLUR_MAX = 0.06;
 // ease du reveal Codegrid : lent → très rapide au milieu → posé
 CustomEase.create('hop', 'M0,0 C0.355,0.022 0.448,0.079 0.5,0.5 0.542,0.846 0.615,1 1,1');
 
-export default function Spotlight() {
+export default function SpotlightDesktop() {
 	const sectionRef = useRef(null);
 	const indexRef = useRef(null);
 	const indexInnerRef = useRef(null); // <span> interne : intro y + blur gooey (le <h1> garde le y du scroll)
@@ -48,7 +36,7 @@ export default function Spotlight() {
 
 			// Mesures recalculées à chaque refresh (resize, orientation, polices…).
 			// L'original les figeait au montage → cassé après resize. Corrigé ici.
-			const dist = { index: 0, names: 0, first: 0, step: 0, mobile: false };
+			const dist = { index: 0, names: 0, first: 0, step: 0 };
 
 			const measure = () => {
 				const section = sectionRef.current;
@@ -61,11 +49,6 @@ export default function Spotlight() {
 				const [a, b] = imgRefs.current;
 				dist.first = a.offsetTop + a.offsetHeight / 2;
 				dist.step = b.offsetTop - a.offsetTop;
-				dist.mobile = window.matchMedia('(max-width: 1000px)').matches;
-
-				// en mobile les noms restent blancs (géré par Tailwind) : on nettoie
-				// toute couleur inline laissée par un passage desktop → mobile.
-				if (dist.mobile) gsap.set(nameRefs.current, { clearProps: 'color' });
 			};
 
 			const container = imagesRef.current;
@@ -184,9 +167,7 @@ export default function Spotlight() {
 					}
 				});
 				tl.to(wraps.slice(1), { opacity: 0.5, duration: 0.8, ease: 'power2.inOut' });
-				if (!dist.mobile) {
-					tl.to(nameRefs.current[0], { color: ACTIVE_COLOR, duration: 0.8, ease: 'power2.inOut' }, 0);
-				}
+				tl.to(nameRefs.current[0], { color: ACTIVE_COLOR, duration: 0.8, ease: 'power2.inOut' }, 0);
 			});
 			// démarre 0.2s avant la fin du reveal des noms → pas de temps mort
 			intro.add(settle, intro.duration() - 0.2);
@@ -294,7 +275,7 @@ export default function Spotlight() {
 						const local = clamp01((progress - i / total) / (1 / total));
 						const moving = i === active;
 						gsap.set(el, { y: -local * dist.names });
-						if (introDone && !dist.mobile) {
+						if (introDone) {
 							gsap.set(el, { color: moving ? ACTIVE_COLOR : DIM_COLOR });
 						}
 						setVel[i](moving ? 0 : velBlur);
@@ -322,62 +303,68 @@ export default function Spotlight() {
 		{ scope: sectionRef }
 	);
 
+	// Le shader scanne les [data-bend] à son montage : il vit donc ici, monté
+	// avec les images (le composant est chargé à la volée, après le 1er rendu).
+	// Ses effets passent après le layout effect de useGSAP → l'opacité 0 est déjà posée.
 	return (
-		<section
-			ref={sectionRef}
-			className="relative z-10 h-svh w-full overflow-hidden p-8">
-			<h1
-				ref={indexRef}
-				className="pointer-events-none text-[clamp(3rem,5vw,7rem)] leading-none font-normal uppercase [filter:url(#blur-matrix)_blur(0.4px)] will-change-transform">
-				<span
-					ref={indexInnerRef}
-					className="inline-block will-change-[transform,filter]">
-					01/{String(PROJECTS.length).padStart(2, '0')}
-				</span>
-			</h1>
+		<>
+			<WebGLScrollBend />
+			<section
+				ref={sectionRef}
+				className="relative z-10 h-svh w-full overflow-hidden p-8">
+				<h1
+					ref={indexRef}
+					className="pointer-events-none text-[clamp(3rem,5vw,7rem)] leading-none font-normal uppercase [filter:url(#blur-matrix)_blur(0.4px)] will-change-transform">
+					<span
+						ref={indexInnerRef}
+						className="inline-block will-change-[transform,filter]">
+						01/{String(PROJECTS.length).padStart(2, '0')}
+					</span>
+				</h1>
 
-			<div
-				ref={imagesRef}
-				data-intro=""
-				data-bend-sync=""
-				className="group absolute inset-x-0 top-0 -z-10 mx-auto flex w-[50%] flex-col gap-4 py-[20svh] will-change-transform data-intro:inset-0 data-intro:w-full! data-intro:py-0! max-[1000px]:w-[calc(100%-4rem)] max-[1000px]:gap-[25svh]">
-				{PROJECTS.map((project, i) => (
-					<a
-						key={project.src}
-						ref={(el) => (imgRefs.current[i] = el)}
-						href={project.href}
-						target="_blank"
-						rel="noopener noreferrer"
-						data-bend
-						data-cursor-icon="arrow"
-						className="block aspect-[4/2.6] w-full overflow-hidden rounded-xl group-data-intro:absolute group-data-intro:inset-0 group-data-intro:aspect-auto group-data-intro:rounded-none">
-						{/* eslint-disable-next-line @next/next/no-img-element -- OGL a besoin de l'élément média brut */}
-						<img
-							src={project.src}
-							alt={project.name}
-							draggable={false}
-							className="h-full w-full object-cover"
-						/>
-					</a>
-				))}
-			</div>
+				<div
+					ref={imagesRef}
+					data-intro=""
+					data-bend-sync=""
+					className="group absolute inset-x-0 top-0 -z-10 mx-auto flex w-[50%] flex-col gap-4 py-[20svh] will-change-transform data-intro:inset-0 data-intro:w-full! data-intro:py-0!">
+					{PROJECTS.map((project, i) => (
+						<a
+							key={project.src}
+							ref={(el) => (imgRefs.current[i] = el)}
+							href={project.href}
+							target="_blank"
+							rel="noopener noreferrer"
+							data-bend
+							data-cursor-icon="arrow"
+							className="block aspect-[4/2.6] w-full overflow-hidden rounded-xl group-data-intro:absolute group-data-intro:inset-0 group-data-intro:aspect-auto group-data-intro:rounded-none">
+							{/* eslint-disable-next-line @next/next/no-img-element -- OGL a besoin de l'élément média brut */}
+							<img
+								src={project.src}
+								alt={project.name}
+								draggable={false}
+								className="h-full w-full object-cover"
+							/>
+						</a>
+					))}
+				</div>
 
-			<div
-				ref={namesRef}
-				className="pointer-events-none absolute right-8 bottom-8 flex flex-col items-end">
-				{PROJECTS.map((project, i) => (
-					<p
-						key={project.name}
-						ref={(el) => (nameRefs.current[i] = el)}
-						className="max-[1000px]:text-foreground text-2xl leading-tight font-medium text-[#4a4a4a] [filter:url(#blur-matrix)_blur(0.4px)] will-change-transform">
-						<span
-							ref={(el) => (nameInnerRefs.current[i] = el)}
-							className="inline-block will-change-[transform,filter]">
-							{project.name}
-						</span>
-					</p>
-				))}
-			</div>
-		</section>
+				<div
+					ref={namesRef}
+					className="pointer-events-none absolute right-8 bottom-8 flex flex-col items-end">
+					{PROJECTS.map((project, i) => (
+						<p
+							key={project.name}
+							ref={(el) => (nameRefs.current[i] = el)}
+							className="text-2xl leading-tight font-medium text-[#4a4a4a] [filter:url(#blur-matrix)_blur(0.4px)] will-change-transform">
+							<span
+								ref={(el) => (nameInnerRefs.current[i] = el)}
+								className="inline-block will-change-[transform,filter]">
+								{project.name}
+							</span>
+						</p>
+					))}
+				</div>
+			</section>
+		</>
 	);
 }
