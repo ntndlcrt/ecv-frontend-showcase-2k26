@@ -1,13 +1,9 @@
 import { Geist, Geist_Mono } from 'next/font/google';
 
-import './globals.css';
-import './cursor.scss';
+import '@/styles/globals.css';
+import '@/styles/cursor.scss';
 
-import Nav from '@/components/Nav';
-
-import GooeyFilter from '@/animations/GooeyFilter';
-import Cursor from '@/libs/Cursor';
-import SmoothScroll from '@/libs/Lenis';
+import GooeyFilter from '@/components/fx/GooeyFilter';
 
 const geistSans = Geist({
 	variable: '--font-geist-sans',
@@ -31,9 +27,7 @@ export default function RootLayout({ children }) {
 			className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
 			<body className="flex min-h-full flex-col">
 				<GooeyFilter />
-				<Nav />
-				<Cursor />
-				<SmoothScroll>{children}</SmoothScroll>
+				{children}
 			</body>
 		</html>
 	);
