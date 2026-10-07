@@ -13,11 +13,18 @@ export const INTRO_ROUTES = ['/'];
 let ended = false;
 const listeners = new Set();
 
+// Abonnés appelés en microtâche, HORS de tout contexte GSAP : `endIntro()` part
+// d'un callback GSAP de la page (onComplete, delayedCall), qui tourne dans le
+// contexte de la page. Un contextSafe (la nav) appelé là s'y rattache → quand la
+// page est démontée, son revert annulait aussi l'apparition de la nav.
 export function endIntro() {
 	if (ended) return;
 	ended = true;
-	for (const fn of listeners) fn();
+	const fns = [...listeners];
 	listeners.clear();
+	queueMicrotask(() => {
+		for (const fn of fns) fn();
+	});
 }
 
 export function onIntroEnd(fn) {
